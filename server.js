@@ -73,50 +73,58 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
     console.log("Starting file processing...");
 
-    let rowIndex = 0;
-    let samples = [];
-    let stride = 1;
-
+    // Pass 1: Count total rows
+    let rowCount = 0;
     fs.createReadStream(req.file.path)
         .pipe(csv())
-        .on("data", (row) => {
-            if (rowIndex < MAX_SAMPLES) {
-                // First MAX_SAMPLES rows: keep all
-                samples.push(parseMBP10Row(row, rowIndex));
-            } else {
-                // Recalculate stride and resample if needed
-                const newStride = Math.ceil((rowIndex + 1) / MAX_SAMPLES);
-                if (newStride !== stride) {
-                    stride = newStride;
-                    samples = samples.filter((s) => s.tickIndex % stride === 0);
-                }
-                if (rowIndex % stride === 0) {
-                    samples.push(parseMBP10Row(row, rowIndex));
-                }
-            }
-
-            rowIndex++;
-            if (rowIndex % 100000 === 0) {
-                console.log(`Processing... ${rowIndex} rows, ${samples.length} samples`);
+        .on("data", () => {
+            rowCount++;
+            if (rowCount % 100000 === 0) {
+                console.log(`Counting... ${rowCount} rows`);
             }
         })
         .on("end", () => {
-            orderBookHistory = samples;
-            totalTicks = rowIndex;
+            console.log(`Total rows: ${rowCount}`);
+            const stride = Math.max(1, Math.ceil(rowCount / MAX_SAMPLES));
+            console.log(`Using stride of ${stride} to get ~${MAX_SAMPLES} samples`);
 
-            console.log(`Done! Stored ${samples.length} samples from ${totalTicks} total ticks (stride: ${stride})`);
+            // Pass 2: Sample with fixed stride
+            const samples = [];
+            let rowIndex = 0;
 
-            fs.unlink(req.file.path, () => {});
+            fs.createReadStream(req.file.path)
+                .pipe(csv())
+                .on("data", (row) => {
+                    if (rowIndex % stride === 0) {
+                        samples.push(parseMBP10Row(row, rowIndex));
+                    }
+                    rowIndex++;
+                    if (rowIndex % 100000 === 0) {
+                        console.log(`Processing... ${rowIndex}/${rowCount} rows, ${samples.length} samples`);
+                    }
+                })
+                .on("end", () => {
+                    orderBookHistory = samples;
+                    totalTicks = rowCount;
 
-            res.json({
-                success: true,
-                count: totalTicks,
-                samples: samples.length,
-                stride: stride
-            });
+                    console.log(`Done! Stored ${samples.length} samples from ${totalTicks} total ticks`);
+
+                    fs.unlink(req.file.path, () => {});
+
+                    res.json({
+                        success: true,
+                        count: totalTicks,
+                        samples: samples.length,
+                        stride: stride
+                    });
+                })
+                .on("error", (err) => {
+                    console.error("Error processing file:", err);
+                    res.status(500).json({ success: false, error: err.message });
+                });
         })
         .on("error", (err) => {
-            console.error("Error processing file:", err);
+            console.error("Error counting rows:", err);
             res.status(500).json({ success: false, error: err.message });
         });
 });

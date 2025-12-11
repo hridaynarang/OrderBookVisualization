@@ -141,7 +141,7 @@ const HistoricalLineChart = memo(function HistoricalLineChart({
               const tick = chartData[v]?.tickIndex;
               return tick !== undefined ? tick.toLocaleString() : "";
             }}
-            label={{ value: "Time Snapshot", position: "insideBottom", offset: -5 }}
+            label={{ value: "Tick Index", position: "insideBottom", offset: -5 }}
           />
           <YAxis
             domain={[minPrice, maxPrice]}
