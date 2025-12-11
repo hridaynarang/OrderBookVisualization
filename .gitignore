@@ -1,0 +1,22 @@
+# Data files
+*.csv
+*.zst
+uploads/
+
+# Build output
+dist/
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Claude
+CLAUDE.md
