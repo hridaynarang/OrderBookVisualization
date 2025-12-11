@@ -1,4 +1,4 @@
-# Hriday Narang ProSights Application Programming Interview - Order Book Visualizer
+# Order Book Visualizer
 
 A web application that visualizes order book data from CSV files with YouTube-like playback controls.
 
