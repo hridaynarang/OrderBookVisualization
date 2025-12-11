@@ -11,7 +11,7 @@ A web application that visualizes order book data from CSV files with YouTube-li
 
 ## Tech Stack
 
-- **Frontend**: React, TypeScript, Vite, Recharts
+- **Frontend**: React, TypeScript, Vite
 - **Backend**: Node.js, Express
 
 ## Getting Started
@@ -24,8 +24,8 @@ A web application that visualizes order book data from CSV files with YouTube-li
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd ProSights
+git clone https://github.com/hridaynarang/OrderBookVisualization.git
+cd OrderBookVisualization
 
 # Install dependencies
 npm install
@@ -68,7 +68,7 @@ The app expects MBP-10 (Market By Price, 10 levels) format with columns:
 ## Project Structure
 
 ```
-ProSights/
+OrderBookVisualization/
 ├── server.js              # Express backend
 ├── App.tsx                # Main React component
 ├── OrderBookPlayer.tsx    # Player with charts and controls
